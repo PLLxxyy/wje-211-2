@@ -46,10 +46,26 @@ export function initDb(): void {
       FOREIGN KEY (user_id) REFERENCES users(id)
     );
 
+    CREATE TABLE IF NOT EXISTS reports (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      post_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      reason TEXT NOT NULL CHECK(reason IN ('色情低俗', '广告营销', '虚假信息', '违法违规', '辱骂攻击', '其他')),
+      description TEXT,
+      status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'resolved', 'rejected')),
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(post_id, user_id),
+      FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    );
+
     CREATE INDEX IF NOT EXISTS idx_posts_created ON posts(created_at DESC);
     CREATE INDEX IF NOT EXISTS idx_comments_post ON comments(post_id);
     CREATE INDEX IF NOT EXISTS idx_likes_post ON likes(post_id);
     CREATE INDEX IF NOT EXISTS idx_likes_user ON likes(user_id);
+    CREATE INDEX IF NOT EXISTS idx_reports_post ON reports(post_id);
+    CREATE INDEX IF NOT EXISTS idx_reports_status ON reports(status);
+    CREATE INDEX IF NOT EXISTS idx_reports_created ON reports(created_at DESC);
   `);
 }
 

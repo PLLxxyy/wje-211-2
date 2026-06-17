@@ -80,4 +80,24 @@ export const api = {
   getDailyStats: () => request('/stats/daily'),
   getMoodStats: () => request('/stats/moods'),
   getOverview: () => request('/stats/overview'),
+
+  // 举报
+  reportPost: (postId: number, reason: string, description?: string) =>
+    request(`/reports/${postId}`, { method: 'POST', body: JSON.stringify({ reason, description }) }),
+
+  checkReportStatus: (postId: number) => request(`/reports/check/${postId}`),
+
+  // 管理员 - 举报管理
+  adminGetReports: (params?: { page?: number; status?: string }) => {
+    const sp = new URLSearchParams();
+    if (params?.page) sp.set('page', String(params.page));
+    if (params?.status) sp.set('status', params.status);
+    return request(`/admin/reports?${sp.toString()}`);
+  },
+
+  adminResolveReport: (reportId: number) =>
+    request(`/admin/reports/${reportId}/resolve`, { method: 'POST' }),
+
+  adminRejectReport: (reportId: number) =>
+    request(`/admin/reports/${reportId}/reject`, { method: 'POST' }),
 };

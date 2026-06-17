@@ -1023,6 +1023,258 @@
       .back-btn:hover {
         color: var(--gray-800);
       }
+
+      /* 模态框 */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        animation: fadeIn 0.2s ease;
+      }
+
+      .modal {
+        background: white;
+        border-radius: var(--radius);
+        padding: 24px;
+        width: 90%;
+        max-width: 480px;
+        box-shadow: var(--shadow-lg);
+        animation: slideUp 0.3s ease;
+      }
+
+      @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+      }
+
+      .modal-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--gray-900);
+      }
+
+      .modal-close {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: none;
+        background: var(--gray-100);
+        color: var(--gray-500);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        transition: all 0.2s;
+      }
+
+      .modal-close:hover {
+        background: var(--gray-200);
+        color: var(--gray-700);
+      }
+
+      .modal-body {
+        margin-bottom: 20px;
+      }
+
+      .modal-footer {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+      }
+
+      /* 举报原因选择 */
+      .report-reasons {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      .report-reason-option {
+        padding: 12px 16px;
+        border: 2px solid var(--gray-200);
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s;
+        background: white;
+        text-align: left;
+      }
+
+      .report-reason-option:hover {
+        border-color: var(--primary);
+        background: var(--primary-light);
+      }
+
+      .report-reason-option.selected {
+        border-color: var(--primary);
+        background: var(--primary-light);
+        color: var(--primary);
+        font-weight: 600;
+      }
+
+      /* 状态标签 */
+      .status-tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .status-tag.pending {
+        background: #fef3c7;
+        color: #92400e;
+      }
+
+      .status-tag.resolved {
+        background: #dcfce7;
+        color: #166534;
+      }
+
+      .status-tag.rejected {
+        background: #e5e7eb;
+        color: #374151;
+      }
+
+      /* 举报卡片 */
+      .report-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 20px;
+        margin-bottom: 16px;
+      }
+
+      .report-card-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        gap: 12px;
+      }
+
+      .report-reason-badge {
+        background: #fef2f2;
+        color: #991b1b;
+        padding: 4px 12px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .report-count-badge {
+        background: var(--warning);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .report-post-content {
+        background: var(--gray-50);
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 14px;
+        color: var(--gray-700);
+        line-height: 1.6;
+        margin-bottom: 12px;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .report-description {
+        font-size: 13px;
+        color: var(--gray-500);
+        margin-bottom: 12px;
+        font-style: italic;
+      }
+
+      .report-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+      }
+
+      .report-post-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+
+      /* 举报按钮 */
+      .report-btn {
+        color: var(--gray-400);
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 6px;
+        border: none;
+        background: none;
+        font-size: 13px;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .report-btn:hover {
+        background: #fef3c7;
+        color: #d97706;
+      }
+
+      .report-btn.reported {
+        color: var(--gray-400);
+        cursor: not-allowed;
+        background: none;
+      }
+
+      .report-btn.reported:hover {
+        background: none;
+        color: var(--gray-400);
+      }
+
+      /* 文本域 */
+      .form-textarea {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid var(--gray-200);
+        border-radius: 10px;
+        font-size: 15px;
+        transition: all 0.2s;
+        outline: none;
+        background: white;
+        min-height: 100px;
+        resize: vertical;
+        font-family: inherit;
+      }
+
+      .form-textarea:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+      }
+
+      .form-textarea::placeholder {
+        color: var(--gray-400);
+      }
     </style>
   </head>
   <body>

@@ -54,10 +54,26 @@ db.exec(`
     FOREIGN KEY (user_id) REFERENCES users(id)
   );
 
+  CREATE TABLE IF NOT EXISTS reports (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    post_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    reason TEXT NOT NULL CHECK(reason IN ('色情低俗', '广告营销', '虚假信息', '违法违规', '辱骂攻击', '其他')),
+    description TEXT,
+    status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'resolved', 'rejected')),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(post_id, user_id),
+    FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+  );
+
   CREATE INDEX IF NOT EXISTS idx_posts_created ON posts(created_at DESC);
   CREATE INDEX IF NOT EXISTS idx_comments_post ON comments(post_id);
   CREATE INDEX IF NOT EXISTS idx_likes_post ON likes(post_id);
   CREATE INDEX IF NOT EXISTS idx_likes_user ON likes(user_id);
+  CREATE INDEX IF NOT EXISTS idx_reports_post ON reports(post_id);
+  CREATE INDEX IF NOT EXISTS idx_reports_status ON reports(status);
+  CREATE INDEX IF NOT EXISTS idx_reports_created ON reports(created_at DESC);
 `);
 
 async function seed() {
@@ -186,6 +202,23 @@ async function seed() {
   }
 
   console.log(`已创建${commentData.length}条评论`);
+
+  // 创建举报
+  const insertReport = db.prepare('INSERT INTO reports (post_id, user_id, reason, description, created_at) VALUES (?, ?, ?, ?, ?)');
+  const reportData: [any, any, string, string, string][] = [
+    [postIds[2], user2.lastInsertRowid, '辱骂攻击', '帖子内容包含人身攻击', '2026-06-15 10:00:00'],
+    [postIds[2], user4.lastInsertRowid, '辱骂攻击', '言辞激烈，影响不好', '2026-06-15 10:10:00'],
+    [postIds[2], user5.lastInsertRowid, '其他', '内容不适宜公开', '2026-06-15 10:20:00'],
+    [postIds[6], user1.lastInsertRowid, '违法违规', '涉及不良信息', '2026-06-15 11:00:00'],
+    [postIds[6], user3.lastInsertRowid, '违法违规', '', '2026-06-15 11:05:00'],
+    [postIds[12], user2.lastInsertRowid, '广告营销', '疑似广告推广', '2026-06-15 12:00:00'],
+  ];
+
+  for (const [postId, userId, reason, description, date] of reportData) {
+    insertReport.run(postId, userId, reason, description || null, date);
+  }
+
+  console.log(`已创建${reportData.length}条举报`);
   console.log('\n种子数据创建完成！');
   console.log('================================');
   console.log('测试账号:');

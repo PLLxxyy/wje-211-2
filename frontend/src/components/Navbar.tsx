@@ -1,6 +1,6 @@
 import { User } from '../api/types';
 
-type Page = 'home' | 'login' | 'register' | 'post-detail' | 'create' | 'profile' | 'stats';
+type Page = 'home' | 'login' | 'register' | 'post-detail' | 'create' | 'profile' | 'stats' | 'admin-reports';
 
 interface Props {
   user: User;
@@ -42,7 +42,15 @@ export default function Navbar({ user, currentPage, onNavigate, onLogout }: Prop
           我的
         </button>
         {user.role === 'admin' && (
-          <span className="admin-badge">管理员</span>
+          <>
+            <span className="admin-badge">管理员</span>
+            <button
+              className={`nav-link ${currentPage === 'admin-reports' ? 'active' : ''}`}
+              onClick={() => onNavigate('admin-reports')}
+            >
+              🚩 举报管理
+            </button>
+          </>
         )}
         <button className="nav-link danger" onClick={onLogout}>
           退出

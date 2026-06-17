@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api/client';
-import { User, PostDetail, getMoodCss, getMoodEmoji } from '../api/types';
+import { User, PostDetail, getMoodCss, getMoodEmoji, ReportReason, REPORT_REASONS } from '../api/types';
 
 type Page = 'home' | 'login' | 'register' | 'post-detail' | 'create' | 'profile' | 'stats';
 
@@ -16,6 +16,11 @@ export default function PostDetailPage({ postId, user, onBack, onNavigate }: Pro
   const [loading, setLoading] = useState(true);
   const [commentText, setCommentText] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [selectedReason, setSelectedReason] = useState<ReportReason | ''>('');
+  const [reportDescription, setReportDescription] = useState('');
+  const [submittingReport, setSubmittingReport] = useState(false);
+  const [hasReported, setHasReported] = useState(false);
 
   useEffect(() => {
     loadPost();
@@ -36,6 +41,21 @@ export default function PostDetailPage({ postId, user, onBack, onNavigate }: Pro
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user && post) {
+      checkReportStatus();
+    }
+  }, [user, postId]);
+
+  const checkReportStatus = async () => {
+    try {
+      const result = await api.checkReportStatus(postId);
+      setHasReported(result.reported);
+    } catch {
+      // 忽略
     }
   };
 
@@ -98,6 +118,38 @@ export default function PostDetailPage({ postId, user, onBack, onNavigate }: Pro
       loadPost();
     } catch {
       alert('删除失败');
+    }
+  };
+
+  const handleOpenReport = () => {
+    if (!user) {
+      onNavigate('login');
+      return;
+    }
+    setShowReportModal(true);
+    setSelectedReason('');
+    setReportDescription('');
+  };
+
+  const handleCloseReport = () => {
+    setShowReportModal(false);
+    setSelectedReason('');
+    setReportDescription('');
+  };
+
+  const handleSubmitReport = async () => {
+    if (!selectedReason) return;
+
+    setSubmittingReport(true);
+    try {
+      await api.reportPost(postId, selectedReason, reportDescription.trim() || undefined);
+      alert('举报成功，我们会尽快处理');
+      setHasReported(true);
+      handleCloseReport();
+    } catch (err: any) {
+      alert(err.message || '举报失败');
+    } finally {
+      setSubmittingReport(false);
     }
   };
 
@@ -167,6 +219,15 @@ export default function PostDetailPage({ postId, user, onBack, onNavigate }: Pro
               <button className="delete-btn" onClick={handleAdminDelete}>
                 ⚠️ 管理员删除
               </button>
+            )}
+            {user && !post.isOwner && (
+              <button
+              className={`report-btn ${hasReported ? 'reported' : ''}`}
+              onClick={handleOpenReport}
+              disabled={hasReported}
+            >
+              {hasReported ? '🚩 已举报' : '🚩 举报'}
+            </button>
             )}
           </div>
         </div>
@@ -238,6 +299,54 @@ export default function PostDetailPage({ postId, user, onBack, onNavigate }: Pro
           </div>
         </div>
       </div>
+
+      {showReportModal && (
+        <div className="modal-overlay" onClick={handleCloseReport}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 className="modal-title">🚩 举报帖子</h3>
+              <button className="modal-close" onClick={handleCloseReport}>×</button>
+            </div>
+            <div className="modal-body">
+              <div className="form-label">请选择举报原因</div>
+              <div className="report-reasons">
+                {REPORT_REASONS.map(reason => (
+                  <button
+                    key={reason.value}
+                    className={`report-reason-option ${selectedReason === reason.value ? 'selected' : ''}`}
+                    onClick={() => setSelectedReason(reason.value)}
+                  >
+                    {reason.label}
+                  </button>
+                ))}
+              </div>
+              <div className="form-group" style={{ marginTop: 16 }}>
+                <label className="form-label">补充说明（可选）</label>
+                <textarea
+                  className="form-textarea"
+                  placeholder="请描述具体问题，以便我们更好地处理..."
+                  value={reportDescription}
+                  onChange={e => setReportDescription(e.target.value)}
+                  maxLength={500}
+                />
+                <div style={{ textAlign: 'right', fontSize: 12, color: 'var(--gray-400)', marginTop: 4 }}>
+                  {reportDescription.length}/500
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-ghost" onClick={handleCloseReport}>取消</button>
+              <button
+                className="btn btn-primary"
+                onClick={handleSubmitReport}
+                disabled={!selectedReason || submittingReport}
+              >
+                {submittingReport ? '提交中...' : '提交举报'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

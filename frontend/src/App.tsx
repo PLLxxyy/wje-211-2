@@ -9,8 +9,9 @@ import PostDetailPage from './pages/PostDetailPage';
 import CreatePostPage from './pages/CreatePostPage';
 import ProfilePage from './pages/ProfilePage';
 import StatsPage from './pages/StatsPage';
+import AdminReportPage from './pages/AdminReportPage';
 
-type Page = 'home' | 'login' | 'register' | 'post-detail' | 'create' | 'profile' | 'stats';
+type Page = 'home' | 'login' | 'register' | 'post-detail' | 'create' | 'profile' | 'stats' | 'admin-reports';
 
 export default function App() {
   const [page, setPage] = useState<Page>('home');
@@ -62,6 +63,10 @@ export default function App() {
 
   if (!user && (page === 'create' || page === 'profile')) {
     navigate('login');
+  }
+
+  if (page === 'admin-reports' && user?.role !== 'admin') {
+    navigate('home');
   }
 
   return (
@@ -123,6 +128,13 @@ export default function App() {
       )}
 
       {page === 'stats' && <StatsPage onNavigate={navigate} />}
+
+      {page === 'admin-reports' && user?.role === 'admin' && (
+        <AdminReportPage
+          onNavigate={navigate}
+          onBack={() => navigate('home')}
+        />
+      )}
     </>
   );
 }

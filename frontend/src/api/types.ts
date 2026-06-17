@@ -71,3 +71,36 @@ export function getMoodEmoji(mood: string): string {
   const option = MOOD_OPTIONS.find(m => m.value === mood);
   return option ? option.emoji : '📝';
 }
+
+export type ReportReason = '色情低俗' | '广告营销' | '虚假信息' | '违法违规' | '辱骂攻击' | '其他';
+
+export const REPORT_REASONS: { value: ReportReason; label: string }[] = [
+  { value: '色情低俗', label: '色情低俗' },
+  { value: '广告营销', label: '广告营销' },
+  { value: '虚假信息', label: '虚假信息' },
+  { value: '违法违规', label: '违法违规' },
+  { value: '辱骂攻击', label: '辱骂攻击' },
+  { value: '其他', label: '其他' },
+];
+
+export type ReportStatus = 'pending' | 'resolved' | 'rejected';
+
+export interface Report {
+  id: number;
+  post_id: number;
+  reason: ReportReason;
+  description: string | null;
+  status: ReportStatus;
+  created_at: string;
+  post_content: string;
+  post_mood: string;
+  post_created_at: string;
+  pending_report_count: number;
+}
+
+export interface ReportsResponse {
+  reports: Report[];
+  total: number;
+  page: number;
+  limit: number;
+}
