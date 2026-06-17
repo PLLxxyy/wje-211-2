@@ -92,9 +92,9 @@ export interface Report {
   description: string | null;
   status: ReportStatus;
   created_at: string;
-  post_content: string;
-  post_mood: string;
-  post_created_at: string;
+  post_content: string | null;
+  post_mood: string | null;
+  post_created_at: string | null;
   pending_report_count: number;
 }
 

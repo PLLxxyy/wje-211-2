@@ -88,7 +88,7 @@ router.get('/reports', authMiddleware, adminMiddleware, (req: AuthRequest, res: 
         p.content as post_content, p.mood as post_mood, p.created_at as post_created_at,
         (SELECT COUNT(*) FROM reports WHERE post_id = r.post_id AND status = 'pending') as pending_report_count
       FROM reports r
-      JOIN posts p ON r.post_id = p.id
+      LEFT JOIN posts p ON r.post_id = p.id
       ${whereClause}
       GROUP BY r.post_id
       ORDER BY pending_report_count DESC, r.created_at DESC
@@ -121,10 +121,21 @@ router.post('/reports/:id/resolve', authMiddleware, adminMiddleware, (req: AuthR
       return;
     }
 
-    db.prepare('DELETE FROM posts WHERE id = ?').run(report.post_id);
-    db.prepare("UPDATE reports SET status = 'resolved' WHERE post_id = ?").run(report.post_id);
+    const post = db.prepare('SELECT id FROM posts WHERE id = ?').get(report.post_id);
 
-    res.json({ message: '帖子已删除，举报已处理' });
+    const updateStmt = db.prepare("UPDATE reports SET status = 'resolved' WHERE post_id = ?");
+    const deleteStmt = db.prepare('DELETE FROM posts WHERE id = ?');
+
+    const transaction = db.transaction(() => {
+      updateStmt.run(report.post_id);
+      if (post) {
+        deleteStmt.run(report.post_id);
+      }
+    });
+
+    transaction();
+
+    res.json({ message: post ? '帖子已删除，举报已处理' : '举报已处理' });
   } catch (err) {
     console.error('处理举报失败:', err);
     res.status(500).json({ error: '服务器错误' });
@@ -142,7 +153,7 @@ router.post('/reports/:id/reject', authMiddleware, adminMiddleware, (req: AuthRe
       return;
     }
 
-    db.prepare("UPDATE reports SET status = 'rejected' WHERE post_id = ?").run(report.post_id);
+    db.prepare("UPDATE reports SET status = 'rejected' WHERE post_id = ? AND status = 'pending'").run(report.post_id);
 
     res.json({ message: '举报已驳回' });
   } catch (err) {

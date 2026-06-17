@@ -63,7 +63,7 @@ db.exec(`
     status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'resolved', 'rejected')),
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(post_id, user_id),
-    FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+    FOREIGN KEY (post_id) REFERENCES posts(id),
     FOREIGN KEY (user_id) REFERENCES users(id)
   );
 

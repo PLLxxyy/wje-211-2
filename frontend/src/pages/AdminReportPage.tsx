@@ -52,12 +52,16 @@ export default function AdminReportPage({ onNavigate, onBack }: Props) {
   };
 
   const handleResolve = async (report: Report) => {
-    if (!confirm(`确定要删除这篇帖子吗？\n\n"${report.post_content.slice(0, 50)}..."`)) return;
+    const postPreview = report.post_content
+      ? `"${report.post_content.slice(0, 50)}..."`
+      : '（该帖子已删除）';
+
+    if (!confirm(`确定要将此举报标记为已处理吗？\n\n帖子内容：${postPreview}`)) return;
 
     setProcessingId(report.id);
     try {
       await api.adminResolveReport(report.id);
-      alert('帖子已删除，举报已处理');
+      alert('处理成功');
       loadReports();
     } catch (err: any) {
       alert(err.message || '处理失败');
@@ -67,7 +71,7 @@ export default function AdminReportPage({ onNavigate, onBack }: Props) {
   };
 
   const handleReject = async (report: Report) => {
-    if (!confirm('确定要驳回这个举报吗？')) return;
+    if (!confirm('确定要驳回这个举报吗？这将驳回该帖子的所有举报。')) return;
 
     setProcessingId(report.id);
     try {
@@ -142,18 +146,26 @@ export default function AdminReportPage({ onNavigate, onBack }: Props) {
                   </span>
                 </div>
 
-                <div className="report-post-meta">
-                  <span className={`mood-tag ${getMoodCss(report.post_mood)}`}>
-                    {getMoodEmoji(report.post_mood)} {report.post_mood}
-                  </span>
-                  <span style={{ fontSize: 12, color: 'var(--gray-400)' }}>
-                    发布于 {formatTime(report.post_created_at)}
-                  </span>
-                </div>
+                {report.post_content ? (
+                  <>
+                    <div className="report-post-meta">
+                      <span className={`mood-tag ${getMoodCss(report.post_mood!)}`}>
+                        {getMoodEmoji(report.post_mood!)} {report.post_mood}
+                      </span>
+                      <span style={{ fontSize: 12, color: 'var(--gray-400)' }}>
+                        发布于 {formatTime(report.post_created_at!)}
+                      </span>
+                    </div>
 
-                <div className="report-post-content">
-                  {report.post_content}
-                </div>
+                    <div className="report-post-content">
+                      {report.post_content}
+                    </div>
+                  </>
+                ) : (
+                  <div className="report-post-content" style={{ background: '#fef2f2', color: '#991b1b' }}>
+                    🗑️ 该帖子已被删除
+                  </div>
+                )}
 
                 {report.description && (
                   <div className="report-description">
@@ -161,7 +173,7 @@ export default function AdminReportPage({ onNavigate, onBack }: Props) {
                   </div>
                 )}
 
-                {report.status === 'pending' && (
+                {report.status === 'pending' && report.post_content && (
                   <div className="report-actions">
                     <button
                       className="btn btn-outline btn-sm"
